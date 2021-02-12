@@ -1,0 +1,33 @@
+## Interface: 70300
+## Title: oUF_Simple
+## Author: zork
+## Notes: Simple oUF layout
+## Dependencies: oUF, oUF_SimpleConfig
+
+libs\LibCustomGlow-1.0\LibStub\LibStub.lua
+libs\LibCustomGlow-1.0\LibCustomGlow-1.0.lua
+
+modules\rAbsorbBar.lua
+modules\rClassBar.lua
+## modules\rAuras.lua
+modules\oUF_DebuffHighlight.lua
+modules\oUF_AuraWatch.lua
+
+core\init.lua
+core\functions.lua
+core\tags.lua
+core\style.lua
+
+templates\player.lua
+templates\target.lua
+templates\targettarget.lua
+templates\pet.lua
+templates\focus.lua
+templates\mouseover.lua
+templates\party.lua
+templates\boss.lua
+templates\nameplate.lua
+templates\raid.lua
+templates\heal.lua
+
+core\spawn.lua
