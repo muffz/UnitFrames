@@ -22,7 +22,7 @@ local function CreateStyle(self)
 
   self.Health = L.F.CreateHealthBar(self)
   self.Power = L.F.CreatePowerBar(self)
-  --self.rAbsorbBar = L.F.CreateAbsorbBar(self)
+  self.HealthPrediction = L.F.HealthPrediction(self)
   L.F.CreateNameText(self)
   L.F.CreateHealthText(self)
   

@@ -139,7 +139,9 @@ local function ColorHealthbarOnThreat(self,unit)
   end
 end
 
---PostUpdateHealth
+-------------------------------------------------------------------------------------------------------------------------------------------------
+-- Health
+-------------------------------------------------------------------------------------------------------------------------------------------------
 local function Health_PostUpdate(health, unit, cur, max)
   local self = health:GetParent()
   local power = self.Power
@@ -148,36 +150,13 @@ local function Health_PostUpdate(health, unit, cur, max)
   if UnitIsFriend("player", unit) then
     health:SetReverseFill(true)
     health:SetValue(max-cur)
-    --health:SetStatusBarColor(0.9,0.13,0.09)
-    --health.bg:SetVertexColor(0,0,0,0.7)
 
     if UnitIsDead(unit) or UnitIsGhost(unit) or not UnitIsConnected(unit) then
       health:SetValue(0)
-      --health.bg:SetVertexColor(0.57,0.57,0.57,0.7)
     end
   else
-    --local type, zero, server_id, instance_id, zone_uid, npc_id, spawn_uid = strsplit("-",UnitGUID(unit))
-    --if type == "Creature" and L.C.importantMobs[npc_id] then
-    if L.C.importantMobs[UnitName(unit)] then
-      --r,g,b = L.C.importantMobs[UnitName(unit)][1],L.C.importantMobs[UnitName(unit)][2],L.C.importantMobs[UnitName(unit)][3]
-    elseif not UnitPlayerControlled(unit) and UnitIsTapDenied(unit) then
-      --r,g,b = 0.57,0.57,0.57
-    elseif UnitIsPlayer(unit) then
-      local _, class = UnitClass(unit)
-      --r,g,b = RAID_CLASS_COLORS[class].r,RAID_CLASS_COLORS[class].g,RAID_CLASS_COLORS[class].b
-      --r,g,b = L.C.colors.class[class].r,L.C.colors.class[class].g,L.C.colors.class[class].b
-    else
-      if not UnitAffectingCombat(unit) then
-        --r,g,b = unpack(L.C.colors.reaction[UnitReaction(unit, "player") or 5]) 
-      else
-        --r,g,b = 0.72,0.11,0.11
-      end
-    end
-
     health:SetReverseFill(false)
     health:SetValue(cur)
-    --health:SetStatusBarColor(r,g,b)
-    --health.bg:SetVertexColor(0,0,0,0.7)
   end
 
   if self.settings.template == "nameplate" then
@@ -187,8 +166,6 @@ local function Health_PostUpdate(health, unit, cur, max)
       self:SetHeight(6)
     end
   end
-
-  --ColorHealthbarOnThreat(health,unit)
 end
 
 local function Health_PostUpdateColor(element, unit, r, g, b)
@@ -198,9 +175,6 @@ local function Health_PostUpdateColor(element, unit, r, g, b)
   local _,class = UnitClass(unit)
   local t,bg = {},{}
 
-  --print(element,unit)
-
-
   if UnitIsFriend("player", unit) then
     t = {0.9,0.13,0.09}
     bg = {0,0,0}
@@ -209,6 +183,7 @@ local function Health_PostUpdateColor(element, unit, r, g, b)
       bg = {0.57,0.57,0.57}
     end
   else
+    -- debug
     -- if UnitName(unit) == "Thunderlord Trapper" and UnitGUID(unit.."target") == UnitGUID("player") then
     if UnitName(unit) == "Spiteful Shade" and UnitGUID(unit.."target") == UnitGUID("player") then
       t = {0.5,0.85,1,1}
@@ -231,17 +206,9 @@ local function Health_PostUpdateColor(element, unit, r, g, b)
   element.bg:SetVertexColor(bg[1],bg[2],bg[3],bg[4] and bg[4] or 0.7)
 end
 
-local function Health_SetColorDisconnected(self, state, isForced)
-  --print(...)
-  print("X")
-end
-
---CreateHealthBar
 local function CreateHealthBar(self)
-  --disabling the healthbar makes no sense, no check for enabled
-  --statusbar
   local s = CreateFrame("StatusBar", nil, self)
-  s:SetStatusBarTexture(L.C.textures.statusbar)
+  s:SetStatusBarTexture(L.C.textures.statusbar, "MEDIUM", -8)
   
   if not self.cfg.powerbar or not self.cfg.powerbar.enabled then 
     s:SetAllPoints()
@@ -258,38 +225,15 @@ local function CreateHealthBar(self)
   bg:SetAllPoints()
   s.bg = bg
 
-  --[[local hi = s:CreateTexture(nil, "BACKGROUND")
-  hi:SetTexture(L.C.textures.backdrop)
-  hi:SetVertexColor(.7,.7,.7,0)
-  hi:SetAllPoints()
-  s.hi = hi]]
-  --[[attributes
-  s.colorTapping = self.cfg.healthbar.colorTapping
-  s.colorDisconnected = self.cfg.healthbar.colorDisconnected
-  s.colorReaction = self.cfg.healthbar.colorReaction
-  s.colorClass = self.cfg.healthbar.colorClass
-  s.colorHealth = self.cfg.healthbar.colorHealth
-  s.colorThreat = self.cfg.healthbar.colorThreat
-  s.colorThreatInvers = self.cfg.healthbar.colorThreatInvers]]
   s.colorThreat = true --UNIT_THREAT_LIST_UPDATE
   s.colorHealth = true
   s.colorDisconnected = true --UNIT_CONNECTION = true
   s.colorTapping = true --UNIT_FACTION = true
-  --hooks
-  --s.colorThreat = Health_Threat
   s.PostUpdate = Health_PostUpdate
   s.PostUpdateColor = Health_PostUpdateColor
-  --s.SetColorDisconnected = Health_SetColorDisconnected
-  --[[if s.colorThreat then
-    self:RegisterEvent("PLAYER_ENTER_COMBAT", L.F.UpdateThreat)
-    self:RegisterEvent("PLAYER_LEAVE_COMBAT", L.F.UpdateThreat)
-    self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", L.F.UpdateThreat)
-    self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", L.F.UpdateThreat)
-  end]]
 
-  self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", Health_PostUpdateColor)
-  table.insert(self.__elements, Health_PostUpdateColor)
-
+  -- self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", Health_PostUpdateColor)
+  -- table.insert(self.__elements, Health_PostUpdateColor)
 
   if self.cfg.healthbar.range then
     self.Range = {
@@ -300,6 +244,52 @@ local function CreateHealthBar(self)
   return s
 end
 L.F.CreateHealthBar = CreateHealthBar
+-------------------------------------------------------------------------------------------------------------------------------------------------
+-- HealthPrediction
+-------------------------------------------------------------------------------------------------------------------------------------------------
+local function HealthPrediction_PostUpdate(self, unit, myIncomingHeal, otherIncomingHeal, absorb, healAbsorb, hasOverAbsorb, hasOverHealAbsorb)
+  local health, maxHealth = UnitHealth(unit), UnitHealthMax(unit)
+  local absorb = UnitGetTotalAbsorbs(unit) or 0
+
+  self:SetMinMaxValues(0, maxHealth)
+  self:SetValue(absorb)
+end
+
+local function HealthPrediction(self)
+  local bars = { "myBar", "otherBar", "absorbBar", "healAbsorbBar" }
+  -- local s = CreateFrame("Frame")
+  local s = CreateFrame("StatusBar", nil, self.Health)
+  s:SetFrameLevel(self.Health:GetFrameLevel())
+  s:SetStatusBarTexture(L.C.textures.statusbar, "MEDIUM", -7)
+  s:SetStatusBarColor(unpack(L.C.colors.healthbar.absorb))
+  -- s:SetAllPoints()
+  s:SetPoint("LEFT")
+  s:SetPoint("RIGHT")
+  s:SetPoint("BOTTOM")
+  s:SetHeight(6)
+
+  --[[for _, name in ipairs(bars) do
+    local bar = CreateFrame("StatusBar", nil, self.Health)
+    bar:SetFrameLevel(self.Health:GetFrameLevel())
+    bar:SetStatusBarTexture(L.C.textures.statusbar, "MEDIUM", -7)
+    bar:SetStatusBarColor(unpack(L.C.colors.healthbar.absorb))
+    -- bar:SetAllPoints()
+    bar:SetPoint('TOP')
+    bar:SetPoint('BOTTOM')
+    bar:SetPoint("LEFT", self.Health:GetStatusBarTexture(), "LEFT", 0, 0)
+    s[name] = bar
+  end--]]
+
+  s.maxOverflow = 1
+  s.PostUpdate = HealthPrediction_PostUpdate
+
+  return s
+end
+L.F.HealthPrediction = HealthPrediction
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+-- Power
+-------------------------------------------------------------------------------------------------------------------------------------------------
 
 --PostUpdatePower
 local function PostUpdatePower(power, unit, cur, min, max)
@@ -316,7 +306,7 @@ local function PostUpdatePower(power, unit, cur, min, max)
   if not UnitIsPlayer(unit) then
     power:Show()
     health:SetHeight(self:GetHeight()-self.cfg.powerbar.height-1)
-    power:SetStatusBarColor(RAID_CLASS_COLORS[class].r,RAID_CLASS_COLORS[class].g,RAID_CLASS_COLORS[class].b)
+    power:SetStatusBarColor(RAID_CLASS_COLORS["MAGE"].r,RAID_CLASS_COLORS["MAGE"].g,RAID_CLASS_COLORS["MAGE"].b)
   elseif self.settings.template == "player" or self.settings.template == "pet" then
     power:Show()
     if self.settings.template == "player" and self.cfg.addpowerbar.integrate and self.AdditionalPower:IsShown() then
@@ -422,25 +412,7 @@ local function CreateAltPowerBar(self)
 end
 L.F.CreateAltPowerBar = CreateAltPowerBar
 
---CreateAbsorbBar
-local function CreateAbsorbBar(self)
-  --like health the absorb bar cannot be disabled
-  --statusbar
-  local s = CreateFrame("StatusBar", nil, self.Health)
-  s:SetAllPoints()
-  s:SetStatusBarTexture(L.C.textures.statusbar)
-  --s:SetStatusBarColor(0,0,0,0)
-  s:SetStatusBarColor(unpack(L.C.colors.healthbar.absorb))
-  s:SetReverseFill(true)
 
-  --[[s.bg = s:CreateTexture(nil, "BACKGROUND")
-  s.bg:SetTexture(L.C.textures.statusbar)--, true)
-  --s.bg:SetAllPoints()
-  s.bg:SetBlendMode("ADD")
-  s.bg:SetVertexColor(unpack(L.C.colors.healthbar.absorb))]]
-  return s
-end
-L.F.CreateAbsorbBar = CreateAbsorbBar
 
 --[[local function ClassPowerPreUpdate(element, event)
   print(element, event)
@@ -681,6 +653,7 @@ L.F.CreateAdditionalPowerBar = CreateAdditionalPowerBar
 -----------------------------
 
 local function CreateGCDBar(self)
+  if true then return end
   if not self.cfg.gcdbar or not self.cfg.gcdbar.enabled then return end
   local s = CreateFrame("StatusBar", nil, self)
   s:SetStatusBarTexture(L.C.textures.statusbar)
@@ -690,24 +663,6 @@ local function CreateGCDBar(self)
   SetPoint(s,self,self.cfg.gcdbar.point)
    
   s:Hide()
-  --bg
-  --[[local bg = s:CreateTexture(nil, "BACKGROUND")
-  bg:SetTexture(L.C.textures.backdrop)
-  bg:SetVertexColor(0,0,0,0.7)
-  bg:SetPoint("TOPLEFT",-2,2)
-  bg:SetPoint("BOTTOMRIGHT",2,-2)
-  s.bg = bg]]
-
-  local function GCD_Show(self)
-    print("X")
-  end
-
-  local function GCD_Hide(self)
-    print("X")
-  end
-
-  --hooksecurefunc(self.ClassPower,"Show",GCD_Show)
-  --hooksecurefunc(self.ClassPower,"Hide",GCD_Hide)
 
   local start,duration,enabled,modRate = GetSpellCooldown(61304)
 
@@ -794,6 +749,31 @@ local function Cast_GlowShow(self, unit)
 end
 
 
+local function Cast_GlowHidee(element)
+  local self = element.__owner 
+  if self.settings.template ~= "nameplate" then return end
+  LCG.PixelGlow_Stop(self.glowFrame)
+end
+
+local function Cast_GlowShoww(element)
+  local self = element.__owner 
+  if self.settings.template ~= "nameplate" then return end
+
+  element:HookScript("OnUpdate", function(_self, elapsed)
+    if not element:IsShown() then 
+      LCG.PixelGlow_Stop(element.glowFrame)
+      return
+    end
+    if UnitGUID(self.unit.."target") == UnitGUID("player") and (element.casting or element.channeling) then 
+      LCG.PixelGlow_Start(element.glowFrame, {1,1,1,1}, 8, 0.25, 24, 2, 0, 0, false)
+    else
+      LCG.PixelGlow_Stop(element.glowFrame)
+    end
+
+  end)
+end
+
+
 
 local function Cast_PostStart(self, unit)
   Cast_CheckInterruptible(self, unit)
@@ -807,7 +787,8 @@ local function Cast_PostStart(self, unit)
   --   print(i,castGUID, self.castID==castGUID)
   -- end
 
-  Cast_GlowShow(self, unit)
+  -- Cast_GlowShow(self, unit)
+  
   --frame - target frame to set glowing;
   --color - {r,g,b,a}, color of lines and opacity, from 0 to 1. Defaul value is {0.95, 0.95, 0.32, 1}; 
   --N - number of lines. Defaul value is 8; 
@@ -826,11 +807,13 @@ local function Cast_PostInterruptible(self, unit)
 end
 
 local function Cast_Update(self, unit)
-  Cast_GlowHide(self)
+  return
+  -- Cast_GlowHide(self)
 end
 
 local function Cast_PostStop(self, unit, spellID)
-  Cast_GlowHide(self)
+  -- if self:GetParent().settings.template ~= "nameplate" then Cast_GlowHide(self) end
+  Cast_GlowHidee(self)
 end
 
 
@@ -896,9 +879,9 @@ local function CreateCastBar(self)
   end
   
   --shield
-  local shield = s:CreateTexture(nil,"BACKGROUND",nil,-8)
+  --[[local shield = s:CreateTexture(nil,"BACKGROUND",nil,-8)
   shield.__owner = s
-  s.Shield = shield
+  s.Shield = shield--]]
   --use a trick here...we use the show/hide on the shield texture to recolor the castbar
   --hooksecurefunc(shield,"Show",SetCastBarColorShielded)
   --hooksecurefunc(s,"Hide",SetCastBarColorDefault)
@@ -913,8 +896,28 @@ local function CreateCastBar(self)
     end
     s.Text = name
   end
-  --hooksecurefunc(s,"Show",Cast_GlowShow)
-  hooksecurefunc(s,"Hide",Cast_GlowHide)
+
+  --if self.settings.template == "nameplate" then
+    --[[s:HookScript("OnUpdate", function(_self, elapsed)
+      print("§")
+      if not self.settings.template == "nameplate" then return end
+      if not _self:IsShown() then 
+        LCG.PixelGlow_Stop(s.glowFrame)
+        return
+      end
+      if UnitGUID(self.unit.."target") == UnitGUID("player") and (s.casting or s.channeling) then 
+        LCG.PixelGlow_Start(s.glowFrame, {1,1,1,1}, 8, 0.25, 24, 2, 0, 0, false)
+      else
+        LCG.PixelGlow_Stop(s.glowFrame)
+      end
+    end)--]]
+  --end
+
+  s:HookScript("OnShow", Cast_GlowShoww)
+  s:HookScript("OnHide", Cast_GlowHidee)
+  -- hooksecurefunc(s,"Show",Cast_GlowShoww)
+  -- hooksecurefunc(s,"Hide",Cast_GlowHidee)
+  --hooksecurefunc(self,"Hide",Cast_GlowHidee)
 
   --Castbar:PostCastStart(self, unit)
   --Castbar:PostCastUpdate(self, unit)
@@ -1335,7 +1338,6 @@ local function CreateNameplateTargetIndicator(self)
   local frame = CreateFrame("Frame", nil, self.Health)
   frame:SetFrameLevel(self:GetFrameLevel())
   local height = self:GetHeight()
-  --print(self.Health:GetPoint())
 
   local function CreateTop(f)
     f = CreateFrame("Frame", nil, frame, "BackdropTemplate")
@@ -1637,20 +1639,20 @@ local function onEvent(self, event, ...)
   end
   
   if GetPlayerRole() == "HEALER" then
-    if _G["oUF_SimplePartyHeader"] then
-      RegisterAttributeDriver(_G["oUF_SimplePartyHeader"],'state-visibility',"hide")
+    if _G["oUF_PartyHeader"] then
+      RegisterAttributeDriver(_G["oUF_PartyHeader"],'state-visibility',"hide")
     end
 
-    if _G["oUF_SimpleHealHeader"] then
-      RegisterAttributeDriver(_G["oUF_SimpleHealHeader"],'state-visibility',L.C.heal.setup.visibility)
+    if _G["oUF_HealHeader"] then
+      RegisterAttributeDriver(_G["oUF_HealHeader"],'state-visibility',L.C.heal.setup.visibility)
     end
   else
-    if _G["oUF_SimplePartyHeader"] then
-      RegisterAttributeDriver(_G["oUF_SimplePartyHeader"],'state-visibility',L.C.party.setup.visibility)
+    if _G["oUF_PartyHeader"] then
+      RegisterAttributeDriver(_G["oUF_PartyHeader"],'state-visibility',L.C.party.setup.visibility)
     end
 
-    if _G["oUF_SimpleHealHeader"] then
-      RegisterAttributeDriver(_G["oUF_SimpleHealHeader"],'state-visibility',"hide")
+    if _G["oUF_HealHeader"] then
+      RegisterAttributeDriver(_G["oUF_HealHeader"],'state-visibility',"hide")
     end
   end
 end
